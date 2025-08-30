@@ -1,5 +1,6 @@
-const opcoesArrayOriginal = ["C5", "D5", "E5", "F5", "G5", "A5", "B5", "C6", "D6", "E6", "F6", "G6", "A6"];
-let opcoesArray = [...opcoesArrayOriginal];
+const opcoesArrayOriginal = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5", "F5", "G5", "A5"];
+let opcoesArray = [];
+let indiceAtual = 0;
 let notaAtual = "";
 let acertos = 0;
 let erros = 0;
@@ -17,23 +18,29 @@ const resultadoFinal = document.getElementById("resultadoFinal");
 const finalAcertos = document.getElementById("finalAcertos");
 const finalErros = document.getElementById("finalErros");
 
-// Função para sortear nota
-function sortearNota() {
-    if (opcoesArray.length === 0) {
+// Função para embaralhar o array
+function embaralharArray(array) {
+    return array
+        .map(item => ({ valor: item, aleatorio: Math.random() }))
+        .sort((a, b) => a.aleatorio - b.aleatorio)
+        .map(item => item.valor);
+}
+
+// Função para mostrar a próxima nota
+function mostrarNota() {
+    if (indiceAtual >= opcoesArray.length) {
         finalizarJogo();
         return;
     }
 
-    // Sorteio aleatório
-    const indice = Math.floor(Math.random() * opcoesArray.length);
-    notaAtual = opcoesArray[indice];
-    opcoesArray.splice(indice, 1);
+    // Define nota atual
+    notaAtual = opcoesArray[indiceAtual];
 
-    // Mostra imagem correspondente
-    notaImg.src = `img/notas/${notaAtual}.png`;
+    // Atualiza imagem
+    notaImg.src = `img/${notaAtual}.png`;
     notaImg.classList.remove("d-none");
 
-    // Limpa campo de resposta
+    // Limpa e foca no input
     inputResposta.value = "";
     inputResposta.focus();
 }
@@ -41,8 +48,7 @@ function sortearNota() {
 // Função para verificar resposta
 function verificarResposta() {
     const resposta = inputResposta.value.toUpperCase().trim();
-
-    if (resposta === "") return;
+    if (!resposta) return;
 
     if (resposta === notaAtual[0]) {
         acertos++;
@@ -52,7 +58,9 @@ function verificarResposta() {
         errosSpan.textContent = erros;
     }
 
-    sortearNota();
+    // Vai para a próxima nota
+    indiceAtual++;
+    mostrarNota();
 }
 
 // Finaliza o jogo
@@ -65,29 +73,36 @@ function finalizarJogo() {
     finalErros.textContent = erros;
 }
 
-// Reiniciar o jogo
+// Reinicia o jogo
 function reiniciarJogo() {
     acertos = 0;
     erros = 0;
-    opcoesArray = [...opcoesArrayOriginal];
+    indiceAtual = 0;
+
+    opcoesArray = embaralharArray([...opcoesArrayOriginal]);
+
     acertosSpan.textContent = acertos;
     errosSpan.textContent = erros;
     resultadoFinal.classList.add("d-none");
     respostaContainer.classList.remove("d-none");
-    sortearNota();
+    mostrarNota();
 }
 
 // Eventos
 btnIniciar.addEventListener("click", () => {
     btnIniciar.classList.add("d-none");
     respostaContainer.classList.remove("d-none");
-    sortearNota();
+
+    // Embaralha as opções no início do jogo
+    opcoesArray = embaralharArray([...opcoesArrayOriginal]);
+
+    mostrarNota();
 });
 
 btnResponder.addEventListener("click", verificarResposta);
 btnReiniciar.addEventListener("click", reiniciarJogo);
 
-// Permite pressionar Enter para responder
+// Permite responder com Enter
 inputResposta.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
         verificarResposta();
